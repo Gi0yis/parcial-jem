@@ -1,0 +1,93 @@
+/* Estilos generales */
+body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f9;
+}
+
+/* Contenedor principal */
+#formulario, #examen {
+    background: white;
+    max-width: 600px;
+    margin: 50px auto;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Estilos para títulos */
+h2 {
+    color: #333;
+    margin-bottom: 20px;
+}
+
+/* Estilos para los inputs */
+input {
+    display: block;
+    width: 90%;
+    padding: 10px;
+    margin: 10px auto;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
+}
+
+/* Botón principal */
+button {
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    padding: 12px;
+    width: 100%;
+    font-size: 18px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+/* Estilos para las preguntas */
+#preguntas {
+    text-align: left;
+}
+
+#preguntas div {
+    background: #ffffff;
+    padding: 15px;
+    margin: 10px 0;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Pregunta destacada */
+#preguntas p {
+    font-size: 16px;
+    font-weight: bold;
+    color: #333;
+}
+
+/* Opciones de respuesta */
+label {
+    display: block;
+    font-size: 16px;
+    margin: 5px 0;
+    cursor: pointer;
+}
+
+input[type="radio"] {
+    margin-right: 10px;
+}
+
+/* Estilo para el botón de enviar */
+#quizForm button {
+    background-color: #28a745;
+}
+
+#quizForm button:hover {
+    background-color: #218838;
+}
