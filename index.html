@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Examen</title>
   <!-- Se referencia el CSS desde la carpeta static -->
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="/static/styles.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.25.0/themes/prism.min.css" />
 </head>
 <body>
@@ -13,8 +13,8 @@
     <h2>Ingrese sus datos</h2>
     <p>
       <strong>Instrucciones:</strong> Complete los campos con su información y presione
-      "Comenzar" para iniciar el examen. Una vez iniciado, tendrá 20 minutos para completarlo
-      (60 minutos para 4to Bachillerato (compu)). Al finalizar el tiempo, el
+      "Comenzar" para iniciar el examen. Una vez iniciado, tendrá 25 minutos para completarlo
+      (75 minutos para 4to Bachillerato (compu)). Al finalizar el tiempo, el
       examen se enviará automáticamente.
     </p>
     <input type="text" id="nombre" placeholder="Nombre" required />
@@ -40,7 +40,7 @@
   <div id="examen" style="display: none;">
     <h2>Examen de Conocimientos</h2>
     <p>
-      <strong>Tiempo restante: <span id="cronometro">20:00</span></strong>
+      <strong>Tiempo restante: <span id="cronometro">25:00</span></strong>
     </p>
     <p>
       <strong>Instrucciones:</strong> Responda todas las preguntas seleccionando la opción
@@ -70,11 +70,12 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.25.0/prism.min.js"></script>
   <script>
     /***** Variables globales *****/
-    let tiempoRestante; // Se asignará 20 o 60 minutos según el curso
+    let tiempoRestante; // Se asignará 25 o 75 minutos según el curso
     let temporizador;
     let preguntas = []; // Se cargarán desde el archivo JSON correspondiente
     let cuentaRegresiva; // Para la cuenta regresiva del modal
     let tiempoOculto = 15; // 15 segundos para anular el examen
+    let autoSubmit = false; // Bandera para diferenciar envío automático vs manual
 
     // Mapeo de cursos según el grado seleccionado
     const cursosPorGrado = {
@@ -145,7 +146,8 @@
 
       if (tiempoRestante <= 0) {
         clearInterval(temporizador);
-        document.getElementById("quizForm").submit();
+        autoSubmit = true; // Se activa el envío automático
+        enviarRespuestas(); // Se invoca la función de envío
       } else {
         tiempoRestante--;
       }
@@ -164,9 +166,9 @@
 
       // Configurar el tiempo según el curso seleccionado
       if (grado === "4to Bachillerato (compu)" && curso === "CA-SYI-LAB") {
-        tiempoRestante = 60 * 60;
+        tiempoRestante = 75 * 60;
       } else {
-        tiempoRestante = 20 * 60;
+        tiempoRestante = 0.10 * 60;
       }
 
       document.getElementById("formulario").style.display = "none";
@@ -207,9 +209,8 @@
         });
     }
 
-    // Envío del formulario de respuestas
-    document.getElementById("quizForm").addEventListener("submit", function (event) {
-      event.preventDefault();
+    // Función que procesa el envío de respuestas (manual o automático)
+    function enviarRespuestas() {
       clearInterval(temporizador);
 
       const nombre = document.getElementById("nombre").value.trim();
@@ -217,17 +218,22 @@
       const curso = document.getElementById("curso").value.trim();
       const respuestas = [];
 
-      let todasRespondidas = true;
+      let preguntasSinResponder = false;
       preguntas.forEach((_, index) => {
         const seleccionada = document.querySelector(`input[name='pregunta${index}']:checked`);
         if (seleccionada) {
           respuestas.push(seleccionada.value);
         } else {
-          todasRespondidas = false;
+          if (autoSubmit) {
+            // En envío automático, las preguntas sin respuesta se completan con un valor por defecto
+            respuestas.push("No contestada");
+          } else {
+            preguntasSinResponder = true;
+          }
         }
       });
 
-      if (!todasRespondidas) {
+      if (preguntasSinResponder) {
         alert("Debe responder todas las preguntas antes de enviar.");
         return;
       }
@@ -246,6 +252,12 @@
           console.error("Error:", error);
           alert("Hubo un problema al enviar las respuestas. Por favor, intente nuevamente.");
         });
+    }
+
+    // Listener para el envío manual del formulario
+    document.getElementById("quizForm").addEventListener("submit", function (event) {
+      event.preventDefault();
+      enviarRespuestas();
     });
 
     // Manejo del modal al cambiar de pestaña o minimizar la ventana
