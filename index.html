@@ -173,7 +173,7 @@
       document.getElementById("examen").style.display = "block";
 
       // Cargar las preguntas desde el endpoint, enviando grado y curso como parámetros
-      const url = `https://beda-2803-d100-e360-74a-6051-3e3e-cae4-2e5f.ngrok-free.app/preguntas?grado=${encodeURIComponent(grado)}&curso=${encodeURIComponent(curso)}`;
+      const url = `http://192.168.1.84:5000/preguntas?grado=${encodeURIComponent(grado)}&curso=${encodeURIComponent(curso)}`;
 
       fetch(url)
         .then((response) => response.json())
