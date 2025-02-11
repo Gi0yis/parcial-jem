@@ -232,7 +232,7 @@
         return;
       }
 
-      fetch("https://2755-2803-d100-e360-74a-6051-3e3e-cae4-2e5f.ngrok-free.app/enviar_respuestas", {
+      fetch("https://beda-2803-d100-e360-74a-6051-3e3e-cae4-2e5f.ngrok-free.app/enviar_respuestas", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ nombre, grado, curso, respuestas }),
@@ -270,7 +270,7 @@
             const curso = document.getElementById("curso").value.trim();
 
             // Enviar la cancelación del examen al backend
-            fetch("https://2755-2803-d100-e360-74a-6051-3e3e-cae4-2e5f.ngrok-free.app/cancelar_examen", {
+            fetch("https://beda-2803-d100-e360-74a-6051-3e3e-cae4-2e5f.ngrok-free.app/cancelar_examen", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ 
