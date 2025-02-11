@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Examen</title>
   <!-- Se referencia el CSS desde la carpeta static -->
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="/static/styles.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.25.0/themes/prism.min.css" />
 </head>
 <body>
@@ -250,6 +250,11 @@
 
     // Manejo del modal al cambiar de pestaña o minimizar la ventana
     document.addEventListener("visibilitychange", function () {
+      // Solo se ejecuta si el contenedor del examen está visible
+      if (document.getElementById("examen").style.display !== "block") {
+        return;
+      }
+      
       const modal = document.getElementById("modal");
       const aceptarBtn = document.getElementById("aceptar");
 
