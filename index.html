@@ -4,7 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Examen</title>
-  <link rel="stylesheet" href="styles.css" />
+  <!-- Se referencia el CSS desde la carpeta static -->
+  <link rel="stylesheet" href="/static/styles.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.25.0/themes/prism.min.css" />
 </head>
 <body>
@@ -110,26 +111,25 @@
 
     /* 
       Función para formatear la pregunta:
-      - Se extraen los bloques de código (delimitados por ```), se convierten en HTML con resaltado
-      - Se sustituyen esos bloques por un marcador temporal
-      - Se escapa todo el texto restante para evitar la interpretación de etiquetas HTML
-      - Finalmente se reinsertan los bloques de código en lugar de los marcadores
+      - Extrae bloques de código delimitados por ``` y los convierte en HTML con resaltado.
+      - Reemplaza temporalmente estos bloques por un marcador para luego reinsertarlos.
+      - Escapa el resto del texto para evitar la interpretación accidental de HTML.
     */
     function formatPregunta(texto) {
       let codeBlocks = [];
       const placeholder = "%%CODEBLOCK%%";
       
-      // Reemplazar bloques de código por un marcador y guardarlos formateados
+      // Reemplazar bloques de código y guardar el HTML generado
       let textWithPlaceholders = texto.replace(/```(\w+)\s*([\s\S]*?)\s*```/g, function(match, lang, code) {
         let htmlCodeBlock = `<pre><code class="language-${lang}">${escapeHtml(code)}</code></pre>`;
         codeBlocks.push(htmlCodeBlock);
         return placeholder;
       });
       
-      // Escapar todo el texto (esto evita que las etiquetas HTML "sueltas" se rendericen)
+      // Escapar el resto del texto
       let escapedText = escapeHtml(textWithPlaceholders);
       
-      // Reemplazar secuencialmente cada marcador por el bloque de código correspondiente
+      // Reinsertar los bloques de código en el orden correcto
       codeBlocks.forEach(function(codeBlock) {
         escapedText = escapedText.replace(placeholder, codeBlock);
       });
@@ -137,7 +137,7 @@
       return escapedText;
     }
 
-    // Función para actualizar el cronómetro del examen
+    // Actualiza el cronómetro del examen
     function actualizarCronometro() {
       const minutos = Math.floor(tiempoRestante / 60);
       const segundos = tiempoRestante % 60;
@@ -151,7 +151,7 @@
       }
     }
 
-    // Función que inicia el examen
+    // Inicia el examen
     function iniciarExamen() {
       const nombre = document.getElementById("nombre").value.trim();
       const grado = document.getElementById("grado").value.trim();
@@ -162,7 +162,7 @@
         return;
       }
 
-      // Configurar el tiempo según la combinación seleccionada
+      // Configurar el tiempo según el curso seleccionado
       if (grado === "4to Bachillerato (compu)" && curso === "CA-SYI-LAB") {
         tiempoRestante = 60 * 60;
       } else {
@@ -172,8 +172,8 @@
       document.getElementById("formulario").style.display = "none";
       document.getElementById("examen").style.display = "block";
 
-      // Cargar las preguntas desde el endpoint, enviando grado y curso como parámetros
-      const url = `http://192.168.1.84:5000/preguntas?grado=${encodeURIComponent(grado)}&curso=${encodeURIComponent(curso)}`;
+      // Construir la URL del endpoint con los parámetros necesarios
+      const url = `https://custom-tom-harry-babies.trycloudflare.com/preguntas?grado=${encodeURIComponent(grado)}&curso=${encodeURIComponent(curso)}`;
 
       fetch(url)
         .then((response) => response.json())
@@ -232,7 +232,7 @@
         return;
       }
 
-      fetch("https://beda-2803-d100-e360-74a-6051-3e3e-cae4-2e5f.ngrok-free.app/enviar_respuestas", {
+      fetch("https://custom-tom-harry-babies.trycloudflare.com/enviar_respuestas", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ nombre, grado, curso, respuestas }),
@@ -270,7 +270,7 @@
             const curso = document.getElementById("curso").value.trim();
 
             // Enviar la cancelación del examen al backend
-            fetch("https://beda-2803-d100-e360-74a-6051-3e3e-cae4-2e5f.ngrok-free.app/cancelar_examen", {
+            fetch("https://custom-tom-harry-babies.trycloudflare.com/cancelar_examen", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ 
