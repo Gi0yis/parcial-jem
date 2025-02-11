@@ -1,134 +1,278 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Examen</title>
-    <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Examen</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.25.0/themes/prism.min.css" />
 </head>
 <body>
-    <div id="formulario">
-        <h2>Ingrese sus datos</h2>
-        <p><strong>Instrucciones:</strong> Complete los campos con su información y presione "Comenzar" para iniciar el examen. Una vez iniciado, tendrá 15 minutos para completarlo. Al finalizar el tiempo, el examen se enviará automáticamente.</p>
-        <input type="text" id="nombre" placeholder="Nombre" required>
-        <input type="text" id="grado" placeholder="Grado" required>
-        <input type="text" id="curso" placeholder="Curso" required>
-        <button onclick="iniciarExamen()">Comenzar</button>
+  <div id="formulario">
+    <h2>Ingrese sus datos</h2>
+    <p>
+      <strong>Instrucciones:</strong> Complete los campos con su información y presione
+      "Comenzar" para iniciar el examen. Una vez iniciado, tendrá 15 minutos para completarlo
+      (50 minutos para 4to Bachillerato (compu) y CA‐SYI‐LAB). Al finalizar el tiempo, el
+      examen se enviará automáticamente.
+    </p>
+    <input type="text" id="nombre" placeholder="Nombre" required />
+
+    <!-- Lista desplegable para Grado -->
+    <select id="grado" required>
+      <option value="">Seleccione Grado</option>
+      <option value="4to Perito Contador">4to Perito Contador</option>
+      <option value="5to Perito Contador">5to Perito Contador</option>
+      <option value="6to Perito Contador">6to Perito Contador</option>
+      <option value="4to Bachillerato (compu)">4to Bachillerato (compu)</option>
+    </select>
+
+    <!-- Lista desplegable para Curso -->
+    <select id="curso" required>
+      <option value="">Seleccione Curso</option>
+      <!-- Se actualizará dinámicamente según el grado seleccionado -->
+    </select>
+
+    <button onclick="iniciarExamen()">Comenzar</button>
+  </div>
+
+  <div id="examen" style="display: none;">
+    <h2>Examen de Conocimientos</h2>
+    <p>
+      <strong>Tiempo restante: <span id="cronometro">15:00</span></strong>
+    </p>
+    <p>
+      <strong>Instrucciones:</strong> Responda todas las preguntas seleccionando la opción
+      correcta. Si el tiempo se acaba, el examen se enviará automáticamente.
+    </p>
+    <form id="quizForm">
+      <div id="preguntas"></div>
+      <button type="submit">Enviar respuestas</button>
+    </form>
+  </div>
+
+  <footer>
+    <p>Desarrollado por Giovanni López</p>
+  </footer>
+
+  <!-- Modal -->
+  <div id="modal">
+    <div id="modal-content">
+      <span id="close">&times;</span>
+      <p>No minimice ni cambie de ventana durante el examen.</p>
+      <p>Tiempo para volver: <span id="tiempoOculto">15</span>s</p>
+      <button id="aceptar">Aceptar</button>
     </div>
+  </div>
 
-    <div id="examen" style="display: none;">
-        <h2>Examen de Conocimientos</h2>
-        <p><strong>Tiempo restante: <span id="cronometro">15:00</span></strong></p>
-        <p><strong>Instrucciones:</strong> Responda todas las preguntas seleccionando la opción correcta. Si el tiempo se acaba, el examen se enviará automáticamente.</p>
-        <form id="quizForm">
-            <div id="preguntas"></div>
-            <button type="submit">Enviar respuestas</button>
-        </form>
-    </div>
+  <!-- Script principal -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.25.0/prism.min.js"></script>
+  <script>
+    /***** Variables globales *****/
+    let tiempoRestante; // Se asignará 15 o 50 minutos según el curso
+    let temporizador;
+    let preguntas = []; // Se cargarán desde el archivo JSON correspondiente
+    let cuentaRegresiva;
+    let tiempoOculto = 15; // 15 segundos para anular el examen
 
-    <footer>
-        <p>Desarrollado por Giovanni López</p>
-    </footer>
+    // Mapeo de cursos según el grado seleccionado
+    const cursosPorGrado = {
+      "4to Perito Contador": ["Programacion I"],
+      "5to Perito Contador": ["Programacion II", "Computación II"],
+      "6to Perito Contador": ["Programacion III", "Computación III"],
+      "4to Bachillerato (compu)": ["CA-SYI-LAB"]
+    };
 
-    <script>
-        let tiempoRestante = 15 * 60; 
-        let temporizador;
-
-        const preguntas = [
-            "Las tablas no admiten filas por debajo de la fila de totales",
-            "Mediante una segmentación de datos, podemos filtrar tanto en rangos como en tablas",
-            "Podemos ordenar los datos de una tabla por más de una columna",
-            "La referencia que hacemos de la siguiente forma a la celda B1: $B$1, es una referencia relativa",
-            "Convertir una tabla en un rango mantiene el formato de la tabla, pero elimina su funcionalidad",
-            "Es posible cambiar el tamaño de una tabla agregando o eliminando filas y columnas",
-            "Una tabla en Excel puede tener un nombre definido que facilita su referencia en fórmulas",
-            "Las referencias relativas cambian cuando se copian a otra celda, mientras que las absolutas permanecen fijas",
-            "La fila de totales en una tabla se actualiza automáticamente al modificar los datos",
-            "Al convertir una tabla en un rango, las fórmulas utilizadas dentro de ella siguen funcionando",
-            "Se pueden aplicar formatos condicionales a una tabla sin afectar el resto de la hoja de cálculo",
-            "Una segmentación de datos permite seleccionar múltiples valores a la vez en un filtro",
-            "Las referencias mixtas combinan características de referencias absolutas y relativas",
-            "Se pueden usar referencias absolutas dentro de una tabla para asegurar que los cálculos no cambien al copiar fórmulas",
-            "Es posible aplicar filtros avanzados en una tabla utilizando criterios personalizados"
-        ];
-
-        function actualizarCronometro() {
-            const minutos = Math.floor(tiempoRestante / 60);
-            const segundos = tiempoRestante % 60;
-            document.getElementById("cronometro").textContent = `${minutos}:${segundos < 10 ? '0' : ''}${segundos}`;
-            
-            if (tiempoRestante <= 0) {
-                clearInterval(temporizador);
-                document.getElementById('quizForm').submit();
-            } else {
-                tiempoRestante--;
-            }
-        }
-
-        function iniciarExamen() {
-            const nombre = document.getElementById('nombre').value.trim();
-            const grado = document.getElementById('grado').value.trim();
-            const curso = document.getElementById('curso').value.trim();
-
-            if (!nombre || !grado || !curso) {
-                alert("Por favor, complete todos los campos antes de comenzar.");
-                return;
-            }
-
-            document.getElementById('formulario').style.display = 'none';
-            document.getElementById('examen').style.display = 'block';
-            
-            temporizador = setInterval(actualizarCronometro, 1000);
-
-            const contenedorPreguntas = document.getElementById('preguntas');
-            preguntas.forEach((pregunta, index) => {
-                const div = document.createElement('div');
-                div.innerHTML = `
-                    <p>${pregunta}</p>
-                    <label><input type="radio" name="pregunta${index}" value="Verdadero"> Verdadero</label>
-                    <label><input type="radio" name="pregunta${index}" value="Falso"> Falso</label>
-                    <label><input type="radio" name="pregunta${index}" value="No sé"> No sé</label>
-                `;
-                contenedorPreguntas.appendChild(div);
-            });
-        }
-
-        document.getElementById('quizForm').addEventListener('submit', function(event) {
-            event.preventDefault();
-            clearInterval(temporizador);
-
-            const nombre = document.getElementById('nombre').value;
-            const grado = document.getElementById('grado').value;
-            const curso = document.getElementById('curso').value;
-            const respuestas = [];
-
-            let todasRespondidas = true;
-            preguntas.forEach((_, index) => {
-                const seleccionada = document.querySelector(`input[name='pregunta${index}']:checked`);
-                if (seleccionada) {
-                    respuestas.push(seleccionada.value);
-                } else {
-                    todasRespondidas = false;
-                }
-            });
-
-            if (!todasRespondidas) {
-                alert("Debe responder todas las preguntas antes de enviar.");
-                return;
-            }
-
-            fetch('https://cace-2800-98-1118-6f7-110a-e7ef-f25d-eebd.ngrok-free.app/enviar_respuestas', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ nombre, grado, curso, respuestas })
-            })
-            .then(response => response.json())
-            .then(data => {
-                alert(`Respuestas enviadas. Puntaje: ${data.puntaje}`);
-                location.reload();
-            })
-            .catch(error => console.error('Error:', error));
+    // Actualiza la lista de cursos según el grado seleccionado
+    document.getElementById("grado").addEventListener("change", function () {
+      const gradoSeleccionado = this.value;
+      const cursoSelect = document.getElementById("curso");
+      cursoSelect.innerHTML = '<option value="">Seleccione Curso</option>'; // Reinicia opciones
+      if (cursosPorGrado[gradoSeleccionado]) {
+        cursosPorGrado[gradoSeleccionado].forEach((curso) => {
+          const opt = document.createElement("option");
+          opt.value = curso;
+          opt.textContent = curso;
+          cursoSelect.appendChild(opt);
         });
-    </script>
+      }
+    });
+
+    // Función para escapar caracteres HTML especiales
+    function escapeHtml(unsafe) {
+      return unsafe
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    /* 
+      Función para formatear la pregunta:
+      - Se extraen los bloques de código (delimitados por ```), se convierten en HTML con resaltado
+      - Se sustituyen esos bloques por un marcador temporal
+      - Se escapa todo el texto restante para evitar la interpretación de etiquetas HTML
+      - Finalmente se reinsertan los bloques de código en lugar de los marcadores
+    */
+    function formatPregunta(texto) {
+      let codeBlocks = [];
+      const placeholder = "%%CODEBLOCK%%";
+      
+      // Reemplazar bloques de código por un marcador y guardarlos formateados
+      let textWithPlaceholders = texto.replace(/```(\w+)\s*([\s\S]*?)\s*```/g, function(match, lang, code) {
+        let htmlCodeBlock = `<pre><code class="language-${lang}">${escapeHtml(code)}</code></pre>`;
+        codeBlocks.push(htmlCodeBlock);
+        return placeholder;
+      });
+      
+      // Escapar todo el texto (esto evita que las etiquetas HTML "sueltas" se rendericen)
+      let escapedText = escapeHtml(textWithPlaceholders);
+      
+      // Reemplazar secuencialmente cada marcador por el bloque de código correspondiente
+      codeBlocks.forEach(function(codeBlock) {
+        escapedText = escapedText.replace(placeholder, codeBlock);
+      });
+      
+      return escapedText;
+    }
+
+    // Función para actualizar el cronómetro
+    function actualizarCronometro() {
+      const minutos = Math.floor(tiempoRestante / 60);
+      const segundos = tiempoRestante % 60;
+      document.getElementById("cronometro").textContent = `${minutos}:${segundos < 10 ? "0" : ""}${segundos}`;
+
+      if (tiempoRestante <= 0) {
+        clearInterval(temporizador);
+        document.getElementById("quizForm").submit();
+      } else {
+        tiempoRestante--;
+      }
+    }
+
+    // Función que inicia el examen
+    function iniciarExamen() {
+      const nombre = document.getElementById("nombre").value.trim();
+      const grado = document.getElementById("grado").value.trim();
+      const curso = document.getElementById("curso").value.trim();
+
+      if (!nombre || !grado || !curso) {
+        alert("Por favor, complete todos los campos antes de comenzar.");
+        return;
+      }
+
+      // Configurar el tiempo según la combinación
+      if (grado === "4to Bachillerato (compu)" && curso === "CA-SYI-LAB") {
+        tiempoRestante = 50 * 60;
+      } else {
+        tiempoRestante = 15 * 60;
+      }
+
+      document.getElementById("formulario").style.display = "none";
+      document.getElementById("examen").style.display = "block";
+
+      // Cargar las preguntas desde el endpoint, enviando grado y curso como parámetros
+      const url = `http://192.168.1.20:5000/preguntas?grado=${encodeURIComponent(grado)}&curso=${encodeURIComponent(curso)}`;
+
+      fetch(url)
+        .then((response) => response.json())
+        .then((data) => {
+          preguntas = data.preguntas;
+          const contenedorPreguntas = document.getElementById("preguntas");
+          preguntas.forEach((item, index) => {
+            const div = document.createElement("div");
+            div.innerHTML = `
+              <p>${formatPregunta(item.pregunta)}</p>
+              <label>
+                <input type="radio" name="pregunta${index}" value="Verdadero"> Verdadero
+              </label>
+              <label>
+                <input type="radio" name="pregunta${index}" value="Falso"> Falso
+              </label>
+              <label>
+                <input type="radio" name="pregunta${index}" value="No sé"> No sé
+              </label>
+            `;
+            contenedorPreguntas.appendChild(div);
+          });
+          // Iniciar el cronómetro
+          temporizador = setInterval(actualizarCronometro, 1000);
+          // Aplicar resaltado de sintaxis con Prism
+          Prism.highlightAll();
+        })
+        .catch((error) => {
+          console.error("Error al cargar preguntas:", error);
+          alert("Hubo un problema al cargar las preguntas. Por favor, intente nuevamente.");
+        });
+    }
+
+    // Envío del formulario de respuestas
+    document.getElementById("quizForm").addEventListener("submit", function (event) {
+      event.preventDefault();
+      clearInterval(temporizador);
+
+      const nombre = document.getElementById("nombre").value.trim();
+      const grado = document.getElementById("grado").value.trim();
+      const curso = document.getElementById("curso").value.trim();
+      const respuestas = [];
+
+      let todasRespondidas = true;
+      preguntas.forEach((_, index) => {
+        const seleccionada = document.querySelector(`input[name='pregunta${index}']:checked`);
+        if (seleccionada) {
+          respuestas.push(seleccionada.value);
+        } else {
+          todasRespondidas = false;
+        }
+      });
+
+      if (!todasRespondidas) {
+        alert("Debe responder todas las preguntas antes de enviar.");
+        return;
+      }
+
+      fetch("http://192.168.1.20:5000/enviar_respuestas", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nombre, grado, curso, respuestas }),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          alert(`Respuestas enviadas. Puntaje: ${data.puntaje}`);
+          location.reload();
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+          alert("Hubo un problema al enviar las respuestas. Por favor, intente nuevamente.");
+        });
+    });
+
+    // Manejo del modal al cambiar de pestaña o minimizar la ventana
+    document.addEventListener("visibilitychange", function () {
+      const modal = document.getElementById("modal");
+      const aceptarBtn = document.getElementById("aceptar");
+
+      if (document.hidden) {
+        modal.style.display = "block";
+        tiempoOculto = 15;
+        cuentaRegresiva = setInterval(() => {
+          document.getElementById("tiempoOculto").textContent = tiempoOculto;
+          tiempoOculto--;
+          if (tiempoOculto <= 0) {
+            clearInterval(cuentaRegresiva);
+            modal.style.display = "none";
+            alert("Examen anulado por cambiar de ventana.");
+            window.close();
+          }
+        }, 1000);
+      }
+
+      aceptarBtn.onclick = function () {
+        clearInterval(cuentaRegresiva);
+        modal.style.display = "none";
+      };
+    });
+  </script>
 </body>
 </html>
