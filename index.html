@@ -175,7 +175,7 @@
       document.getElementById("examen").style.display = "block";
 
       // Construir la URL del endpoint con los parámetros necesarios
-      const url = `https://wrapping-mods-icq-earliest.trycloudflare.com/preguntas?grado=${encodeURIComponent(grado)}&curso=${encodeURIComponent(curso)}`;
+      const url = `https://complimentary-tiger-enrollment-michelle.trycloudflare.com/preguntas?grado=${encodeURIComponent(grado)}&curso=${encodeURIComponent(curso)}`;
 
       fetch(url)
         .then((response) => response.json())
@@ -238,7 +238,7 @@
         return;
       }
 
-      fetch("https://wrapping-mods-icq-earliest.trycloudflare.com/enviar_respuestas", {
+      fetch("https://complimentary-tiger-enrollment-michelle.trycloudflare.com/enviar_respuestas", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ nombre, grado, curso, respuestas }),
@@ -287,7 +287,7 @@
             const curso = document.getElementById("curso").value.trim();
 
             // Enviar la cancelación del examen al backend
-            fetch("https://wrapping-mods-icq-earliest.trycloudflare.com/cancelar_examen", {
+            fetch("https://complimentary-tiger-enrollment-michelle.trycloudflare.com/cancelar_examen", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ 
